@@ -1,0 +1,8 @@
+Executable : /home/kevin/Android/Sdk/cmake/3.10.2.4988404/bin/cmake
+arguments : 
+--build
+/home/kevin/AndroidStudioProjects/MyApplication2/app/.externalNativeBuild/cmake/debug/armeabi-v7a
+--target
+native-lib
+jvmArgs : 
+

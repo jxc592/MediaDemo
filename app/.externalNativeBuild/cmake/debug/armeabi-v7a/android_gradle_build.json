@@ -1,0 +1,72 @@
+{
+  "stringTable": {
+    "0": "/home/kevin/AndroidStudioProjects/MyApplication2/app/.externalNativeBuild/cmake/debug/armeabi-v7a",
+    "1": "--target=armv7-none-linux-androideabi --gcc-toolchain=/home/kevin/Android/Sdk/android-ndk-r17c/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64 --sysroot=/home/kevin/Android/Sdk/android-ndk-r17c/sysroot -Dnative_lib_EXPORTS -I/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/./include -isystem /home/kevin/Android/Sdk/android-ndk-r17c/sources/cxx-stl/llvm-libc++/include -isystem /home/kevin/Android/Sdk/android-ndk-r17c/sources/android/support/include -isystem /home/kevin/Android/Sdk/android-ndk-r17c/sources/cxx-stl/llvm-libc++abi/include -isystem /home/kevin/Android/Sdk/android-ndk-r17c/sysroot/usr/include/arm-linux-androideabi -D__ANDROID_API__=28 -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security -std=c++11 -O0 -fno-limit-debug-info -fPIC"
+  },
+  "buildFiles": [
+    "/home/kevin/Android/Sdk/android-ndk-r17c/build/cmake/android.toolchain.cmake",
+    "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/home/kevin/Android/Sdk/cmake/3.10.2.4988404/bin/cmake --build \"/home/kevin/AndroidStudioProjects/MyApplication2/app/.externalNativeBuild/cmake/debug/armeabi-v7a\" --target clean"
+  ],
+  "libraries": {
+    "native-lib-Debug-armeabi-v7a": {
+      "buildCommand": "/home/kevin/Android/Sdk/cmake/3.10.2.4988404/bin/cmake --build \"/home/kevin/AndroidStudioProjects/MyApplication2/app/.externalNativeBuild/cmake/debug/armeabi-v7a\" --target native-lib",
+      "buildType": "debug",
+      "toolchain": "2980565199",
+      "abi": "armeabi-v7a",
+      "artifactName": "native-lib",
+      "files": [
+        {
+          "src": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/native-lib.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "src": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/AudioPlayer.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "src": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/ffmpegsource.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "src": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/ffmpeg.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        }
+      ],
+      "headers": [
+        {
+          "header": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/AudioPlayer.h",
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "header": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/ffmpegsource.h",
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "header": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/log.h",
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "header": "/home/kevin/AndroidStudioProjects/MyApplication2/app/src/main/cpp/ffmpeg.h",
+          "workingDirectoryOrdinal": 0
+        }
+      ],
+      "output": "/home/kevin/AndroidStudioProjects/MyApplication2/app/build/intermediates/cmake/debug/obj/armeabi-v7a/libnative-lib.so"
+    }
+  },
+  "toolchains": {
+    "2980565199": {
+      "cppCompilerExecutable": "/home/kevin/Android/Sdk/android-ndk-r17c/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}
