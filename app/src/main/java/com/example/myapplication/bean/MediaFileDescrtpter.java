@@ -6,7 +6,7 @@ import android.util.Base64;
 
 public class MediaFileDescrtpter implements Parcelable {
     //basic
-    long id =0 ;
+    long id = -1 ;
     String data = "";
     String title ="";
     String album ="";

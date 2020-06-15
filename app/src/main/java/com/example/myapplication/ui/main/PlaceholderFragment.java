@@ -53,6 +53,9 @@ public class PlaceholderFragment extends Fragment {
             case 2:
                 fragment = new AudioFragment();
                 break;
+            case 3:
+                fragment = new ImageFragment();
+                break;
             default:
                 fragment = new PlaceholderFragment();
                 break;

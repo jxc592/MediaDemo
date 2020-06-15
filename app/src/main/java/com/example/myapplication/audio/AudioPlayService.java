@@ -22,7 +22,11 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.service.notification.NotificationListenerService;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 
 import androidx.core.app.NotificationCompat;
@@ -36,6 +40,8 @@ import com.example.myapplication.util.BitmapUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 public class AudioPlayService extends Service implements
         MediaPlayer.OnPreparedListener,
@@ -87,7 +93,7 @@ public class AudioPlayService extends Service implements
             }
         };
 
-        Cursor audioCursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,null,null);
+        Cursor audioCursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,null,null,"_ID desc");
 
         if(audioCursor != null ) {
             while (audioCursor.moveToNext()) {
@@ -130,8 +136,9 @@ public class AudioPlayService extends Service implements
         intentFilter.addAction(AudioAction.ACTION_PAUSE);
         intentFilter.addAction(AudioAction.ACTION_PLAY);
         intentFilter.addAction(AudioAction.ACTION_PRE);
+        intentFilter.addAction(AudioAction.ACTION_PLAY_STATE);
+        intentFilter.addAction(AudioAction.ACTION_PAUSE_STATE);
         registerReceiver(mreciver,intentFilter);
-
 
     }
 
@@ -147,7 +154,6 @@ public class AudioPlayService extends Service implements
 
         MediaFileDescrtpter mediaFileDescrtpter = intent.getParcelableExtra("data");
         if(mediaFileDescrtpter != null && mediaFileDescrtpter.getData().length() > 0) {
-
             if(mCurrtentmediaFileDescrtpter != null
              && mediaFileDescrtpter.getData().equals(mCurrtentmediaFileDescrtpter.getData())) {
 
@@ -155,9 +161,6 @@ public class AudioPlayService extends Service implements
                 play(mediaFileDescrtpter);
             }
         }
-
-
-
         return super.onStartCommand(intent, flags, startId);
 
     }
@@ -186,7 +189,20 @@ public class AudioPlayService extends Service implements
             }
         } else {
             int i = mDataList.indexOf(mCurrtentmediaFileDescrtpter);
-            if(i>0 && i<mDataList.size()-1) {
+            Log.d("jxc","first check current music index += " + i);
+
+            if(i < 0) {
+                mCurrtentmediaFileDescrtpter.getId();
+                for (int j =0 ;j<mDataList.size();j ++) {
+                    if(mCurrtentmediaFileDescrtpter.getId() == mDataList.get(j).getId()) {
+                        i = j;
+                        break;
+                    }
+                }
+                Log.d("jxc","playNextSound double check current music index += " + i);
+            }
+
+            if(i>=0 && i<mDataList.size()-1) {
                 play(mDataList.get(i+1));
             } else {
                 play(mDataList.get(0));
@@ -202,6 +218,17 @@ public class AudioPlayService extends Service implements
             }
         } else {
             int i = mDataList.indexOf(mCurrtentmediaFileDescrtpter);
+            if(i < 0) {
+                mCurrtentmediaFileDescrtpter.getId();
+                for (int j =0 ;j<mDataList.size();j ++) {
+                    if(mCurrtentmediaFileDescrtpter.getId() == mDataList.get(j).getId()) {
+                        i = j;
+                        break;
+                    }
+                }
+                Log.d("jxc","playPreSound double check current music index += " + i);
+            }
+
             if(i>1) {
                 play(mDataList.get(i-1));
             } else {
@@ -255,13 +282,39 @@ public class AudioPlayService extends Service implements
     }
 
 
-    Notification createNoti(MediaFileDescrtpter mediaFileDescrtpter) {
-
-
+    /**
+     *
+     * @param mediaFileDescrtpter
+     * @param state pause:false   play:true
+     * @return
+     */
+    Notification createNoti(MediaFileDescrtpter mediaFileDescrtpter,boolean state) {
         RemoteViews remoteViews = new RemoteViews(BuildConfig.APPLICATION_ID,R.layout.layout_audio_noti);
-        if(mediaFileDescrtpter !=null) {
-            Bitmap source = BitmapUtils.getAlbumArt(this,mediaFileDescrtpter.getData());
+        Intent intentNext = new Intent(AudioAction.ACTION_NEXT);
+        PendingIntent piNext = PendingIntent.getBroadcast(getBaseContext(),10,intentNext,FLAG_UPDATE_CURRENT);
+        remoteViews.setOnClickPendingIntent(R.id.bt_next,piNext);
+
+        Intent intentPre = new Intent(AudioAction.ACTION_PRE);
+        PendingIntent piPre = PendingIntent.getBroadcast(getBaseContext(),11,intentPre,FLAG_UPDATE_CURRENT);
+        remoteViews.setOnClickPendingIntent(R.id.bt_pre,piPre);
+
+        Intent intentStateChange = new Intent(AudioAction.ACTION_PLAY);
+        PendingIntent piStateChange = PendingIntent.getBroadcast(getBaseContext(),12,intentStateChange,FLAG_UPDATE_CURRENT);
+        remoteViews.setOnClickPendingIntent(R.id.bt_play,piStateChange);
+
+        if(state){
+            remoteViews.setInt(R.id.bt_play,"setBackgroundResource",R.drawable.ic_noti_player_pause);
+        } else{
+            remoteViews.setInt(R.id.bt_play,"setBackgroundResource",R.drawable.ic_noti_player_play);
         }
+
+        if(mediaFileDescrtpter !=null) {
+            remoteViews.setCharSequence(R.id.tv_title, "setText", mediaFileDescrtpter.getTitle());
+            remoteViews.setCharSequence(R.id.tv_author, "setText", mediaFileDescrtpter.getTitle());
+            Bitmap source = BitmapUtils.getAlbumArt(this,mediaFileDescrtpter.getData());
+            remoteViews.setImageViewBitmap(R.id.iv_thumbuil,source);
+        }
+
         Intent intent = new Intent(this,AudioPlayActivity.class);
         PendingIntent pi  = PendingIntent.getActivity(this,0,intent,0);
         Notification notification = new NotificationCompat.Builder(this,notiId) //发送通道
@@ -272,6 +325,10 @@ public class AudioPlayService extends Service implements
                 .setContentIntent(pi)
                 .build();
         return notification;
+    }
+
+    Notification createNoti(MediaFileDescrtpter mediaFileDescrtpter) {
+        return createNoti(mediaFileDescrtpter,true);
     }
 
     @Override
@@ -302,17 +359,21 @@ public class AudioPlayService extends Service implements
     @Override
     public void onPlayStart() {
         if(mediaPlayer != null) {
-            int position = mediaPlayer.getCurrentPosition();
-            mediaPlayer.reset();
-            mediaPlayer.seekTo(position);
-            Intent intent = new Intent(AudioAction.ACTION_PLAY_STATE);
-            sendBroadcast(intent);
+            if (!mediaPlayer.isPlaying()) {
+                mediaPlayer.start();
+                Intent intent = new Intent(AudioAction.ACTION_PLAY_STATE);
+                sendBroadcast(intent);
+            } else {
+                mediaPlayer.pause();
+                Intent intent = new Intent(AudioAction.ACTION_PAUSE_STATE);
+                sendBroadcast(intent);
+            }
         }
     }
 
     @Override
     public void onPlayStarted() {
-
+        mNotificationManager.notify(1,createNoti(mCurrtentmediaFileDescrtpter,true));
     }
 
     @Override
@@ -326,7 +387,7 @@ public class AudioPlayService extends Service implements
 
     @Override
     public void onPlayPaused() {
-
+        mNotificationManager.notify(1,createNoti(mCurrtentmediaFileDescrtpter,false));
     }
 
     @Override

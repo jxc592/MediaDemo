@@ -17,7 +17,7 @@ import com.example.myapplication.R;
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @StringRes
-    private static final int[] TAB_TITLES = new int[]{R.string.tab_video, R.string.tab_audio};
+    private static final int[] TAB_TITLES = new int[]{R.string.tab_video, R.string.tab_audio,R.string.tab_image};
     private final Context mContext;
 
     public SectionsPagerAdapter(Context context, FragmentManager fm) {

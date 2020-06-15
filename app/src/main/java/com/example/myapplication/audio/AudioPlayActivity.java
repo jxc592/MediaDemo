@@ -10,6 +10,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -18,16 +20,22 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.myapplication.BuildConfig;
 import com.example.myapplication.IAudioPlayService;
 import com.example.myapplication.R;
 import com.example.myapplication.bean.MediaFileDescrtpter;
+import com.example.myapplication.util.BitmapUtils;
 import com.example.myapplication.util.NativeLib;
+import com.example.myapplication.widget.CircleImageDrawable;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +60,13 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getWindow().setBackgroundDrawable(getDrawable(R.drawable.player_background_real));
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
         setContentView(R.layout.activity_audio_play);
         tv_title = findViewById(R.id.tv_title);
         tv_author = findViewById(R.id.tv_author);
@@ -90,6 +105,14 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
         Intent intent = new Intent(this, AudioPlayService.class);
         bindService(intent,mServiceConnection, Activity.BIND_AUTO_CREATE);
 
+        MediaFileDescrtpter descrtpter = getIntent().getParcelableExtra("data");
+        if(descrtpter != null && descrtpter.getData()!=null ) {
+            File file = new File(descrtpter.getData());
+            Uri uri = FileProvider.getUriForFile(getBaseContext(), BuildConfig.APPLICATION_ID.concat(".provider"),file);
+            grantUriPermission(BuildConfig.APPLICATION_ID,uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+        mDescriptor = descrtpter;
+        refrehView();
     }
 
     @Override
@@ -102,21 +125,21 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         MediaFileDescrtpter descrtpter = getIntent().getParcelableExtra("data");
-
         if(descrtpter != null && descrtpter.getData()!=null ) {
             File file = new File(descrtpter.getData());
             Uri uri = FileProvider.getUriForFile(getBaseContext(), BuildConfig.APPLICATION_ID.concat(".provider"),file);
             grantUriPermission(BuildConfig.APPLICATION_ID,uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
-
         mDescriptor = descrtpter;
-
         refrehView();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     void refrehView() {
@@ -125,12 +148,30 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
         int length =0 ;
         byte[] data = nativeLib.parserAlbumArt(mDescriptor.getData());
 
+
+        float activityWidth = getWindow().getDecorView().getMeasuredWidth();
+        float imageViewWidth = activityWidth/5*3;
+
         if(data != null && data.length >0) {
             Bitmap source = BitmapFactory.decodeByteArray(data,0,data.length);
             Log.d("jxc","bitmap == null ? " + (source == null ? "true" :"false"));
-            if(source != null)
-                iv.setImageBitmap(source);
+            if(source != null) {
+                iv.setImageDrawable(new CircleImageDrawable(source));
+            }else {
+                iv.setImageDrawable(new CircleImageDrawable(BitmapFactory.
+                        decodeResource(getResources(),R.drawable.profile_default_bg_small)));
+            }
+        } else {
+            iv.setImageDrawable(new CircleImageDrawable(BitmapFactory.
+                    decodeResource(getResources(),R.drawable.profile_default_bg_small)));
         }
+
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) iv.getLayoutParams();
+        lp.width = (int) imageViewWidth;
+        lp.width = (int) imageViewWidth;
+        iv.setLayoutParams(lp);
+
+
 
         tv_title.setText(mDescriptor.getTitle());
         tv_author.setText(mDescriptor.getArtist());
@@ -139,6 +180,8 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
 
         bt_play.setBackground(getDrawable(R.drawable.player_btn_pause_normal));
         bt_play.setTag(1);
+
+        getSupportActionBar().setTitle(mDescriptor.getTitle());
     }
 
 
@@ -171,7 +214,7 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onPlayStart() {
-
+        //ui do not need take action
     }
 
     @Override
@@ -190,7 +233,7 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onPlayPause() {
-
+        //ui do not need take action
     }
 
     @Override

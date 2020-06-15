@@ -1,14 +1,10 @@
 package com.example.myapplication.ui.main;
 
-import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
-import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,14 +15,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.myapplication.BuildConfig;
-import com.example.myapplication.IAudioPlayService;
 import com.example.myapplication.R;
-import com.example.myapplication.audio.AudioPlayService;
 import com.example.myapplication.bean.MediaFileDescrtpter;
 import com.example.myapplication.util.BitmapUtils;
 import com.example.myapplication.video.VideoPlayActivity;
@@ -34,7 +27,7 @@ import com.example.myapplication.video.VideoPlayActivity;
 import java.io.File;
 import java.util.List;
 
-public class VideoFragment extends PlaceholderFragment {
+public class ImageFragment extends PlaceholderFragment {
 
     VideoAdapter mAdapter;
 
@@ -43,32 +36,28 @@ public class VideoFragment extends PlaceholderFragment {
     protected void init() {
         super.init();
 
-        StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(2,RecyclerView.VERTICAL);
+        StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(3,RecyclerView.VERTICAL);
         gridLayoutManager.setOrientation(RecyclerView.VERTICAL);
         mListView.setLayoutManager(gridLayoutManager);
         mAdapter = new VideoAdapter();
-        Cursor videoCursor = getActivity().getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,null,null,null,"_ID desc");
+        Cursor imageCursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null,null,null,"_ID desc");
 
-        if(videoCursor != null ) {
-            while (videoCursor.moveToNext()) {
-                int id =videoCursor.getInt(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns._ID));
-                String data =videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.DATA));
-                String title = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.TITLE));
-                String album = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.ALBUM));
-                String artist = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.ARTIST));
-                String bookmart = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.BOOKMARK));
-                String category = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.CATEGORY));
-                int height = videoCursor.getInt(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.HEIGHT));
-                int width = videoCursor.getInt(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.WIDTH));
-                String desctiption = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.DESCRIPTION));
-                long duration = videoCursor.getLong(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.DURATION));
-                String language = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.LANGUAGE));
-                String resolution = videoCursor.getString(videoCursor.getColumnIndex(MediaStore.Video.VideoColumns.RESOLUTION));
-                MediaFileDescrtpter mediaFileDescrtpter = new MediaFileDescrtpter( id,  data ,title,  album,  artist,  bookmart,  category,  height,  width,  desctiption,  duration,  language,  resolution);
+        if(imageCursor != null ) {
+            while (imageCursor.moveToNext()) {
+                int id =imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns._ID));
+                String data =imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                String title = imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.TITLE));
+
+                int height = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.HEIGHT));
+                int width = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.WIDTH));
+                String desctiption = imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.DESCRIPTION));
+                long duration = imageCursor.getLong(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.DURATION));
+
+                MediaFileDescrtpter mediaFileDescrtpter = new MediaFileDescrtpter( id,  data ,title,  "",  "",  "",  "",  height,  width,  desctiption,  duration,  "",  "");
                 mDataList.add(mediaFileDescrtpter);
 
             }
-            videoCursor.close();
+            imageCursor.close();
             mListView.setAdapter(mAdapter);
         }
 
@@ -95,8 +84,8 @@ public class VideoFragment extends PlaceholderFragment {
         }
 
         void initData(final MediaFileDescrtpter mediaFileDescrtpter) {
-            Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(container.getContext().getContentResolver(),mediaFileDescrtpter.getId(),1,null);
-            mActivityWidth = mListView.getMeasuredWidth()/2 -25 ;
+            Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(container.getContext().getContentResolver(),mediaFileDescrtpter.getId(),1,null);
+            mActivityWidth = mListView.getMeasuredWidth()/3 -20 ;
             Log.d("jxc","activiy width " + mActivityWidth);
 
             float imageW = bitmap.getWidth();
