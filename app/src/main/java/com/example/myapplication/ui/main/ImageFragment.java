@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.example.myapplication.BuildConfig;
 import com.example.myapplication.R;
 import com.example.myapplication.bean.MediaFileDescrtpter;
+import com.example.myapplication.image.ImageDisplayActivity;
 import com.example.myapplication.util.BitmapUtils;
 import com.example.myapplication.video.VideoPlayActivity;
 
@@ -103,7 +104,7 @@ public class ImageFragment extends PlaceholderFragment {
             container.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(getActivity(), VideoPlayActivity.class);
+                    Intent intent = new Intent(getActivity(), ImageDisplayActivity.class);
                     Uri uri = null;
                     if (mediaFileDescrtpter != null && mediaFileDescrtpter.getData() != null) {
                         File file = new File(mediaFileDescrtpter.getData());

@@ -66,6 +66,9 @@ public class AudioPlayService extends Service implements
 
     List<MediaFileDescrtpter> mDataList = new ArrayList<>();
 
+
+    boolean isForegroundState = false;
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -124,7 +127,9 @@ public class AudioPlayService extends Service implements
         NotificationChannel channel = new NotificationChannel(notiId,"AudioPlayer", NotificationManager.IMPORTANCE_DEFAULT);
         mNotificationManager  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.createNotificationChannel(channel);
-        startForeground(1,createNoti(null));
+
+
+
         mediaPlayer = new MediaPlayer();
         mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
@@ -275,7 +280,12 @@ public class AudioPlayService extends Service implements
         }
 
         if(successSet) {
-            mNotificationManager.notify(1,createNoti(mediaFileDescrtpter));
+            if(isForegroundState) {
+                mNotificationManager.notify(1,createNoti(mediaFileDescrtpter));
+            } else {
+                startForeground(1,createNoti(null));
+                isForegroundState = true;
+            }
         } else {
             mAudioManager.abandonAudioFocusRequest(mRequest);
         }
@@ -310,7 +320,7 @@ public class AudioPlayService extends Service implements
 
         if(mediaFileDescrtpter !=null) {
             remoteViews.setCharSequence(R.id.tv_title, "setText", mediaFileDescrtpter.getTitle());
-            remoteViews.setCharSequence(R.id.tv_author, "setText", mediaFileDescrtpter.getTitle());
+            remoteViews.setCharSequence(R.id.tv_author, "setText", mediaFileDescrtpter.getArtist());
             Bitmap source = BitmapUtils.getAlbumArt(this,mediaFileDescrtpter.getData());
             remoteViews.setImageViewBitmap(R.id.iv_thumbuil,source);
         }
@@ -320,8 +330,8 @@ public class AudioPlayService extends Service implements
         Notification notification = new NotificationCompat.Builder(this,notiId) //发送通道
                 .setContent(remoteViews)
                 .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher))
+                .setSmallIcon(R.drawable.icon)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.icon))
                 .setContentIntent(pi)
                 .build();
         return notification;

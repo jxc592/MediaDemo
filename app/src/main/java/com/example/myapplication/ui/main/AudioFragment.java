@@ -125,13 +125,17 @@ public class AudioFragment extends PlaceholderFragment {
             container.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(getActivity(), AudioPlayActivity.class);
-                    intent.putExtra("data",mediaFileDescrtpter);
-                    startActivity(intent);
+
 
                     Intent intentService = new Intent(getActivity(), AudioPlayService.class);
                     intentService.putExtra("data",mediaFileDescrtpter);
                     getActivity().startForegroundService(intentService);
+
+
+                    Intent intent = new Intent(getActivity(), AudioPlayActivity.class);
+                    startActivity(intent);
+
+
                 }
             });
         }

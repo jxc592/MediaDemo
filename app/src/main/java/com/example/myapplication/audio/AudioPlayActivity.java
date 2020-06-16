@@ -95,6 +95,16 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 iAudioPlayService = IAudioPlayService.Stub.asInterface(service);
+
+                try {
+                    if(iAudioPlayService!=null && iAudioPlayService.getCurrentSond() != null) {
+                        mDescriptor = MediaFileDescrtpter.unmarshall(iAudioPlayService.getCurrentSond());
+                        Log.d("jxc","onNewIntent" + mDescriptor.getTitle());
+                        refrehView();
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -105,14 +115,7 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
         Intent intent = new Intent(this, AudioPlayService.class);
         bindService(intent,mServiceConnection, Activity.BIND_AUTO_CREATE);
 
-        MediaFileDescrtpter descrtpter = getIntent().getParcelableExtra("data");
-        if(descrtpter != null && descrtpter.getData()!=null ) {
-            File file = new File(descrtpter.getData());
-            Uri uri = FileProvider.getUriForFile(getBaseContext(), BuildConfig.APPLICATION_ID.concat(".provider"),file);
-            grantUriPermission(BuildConfig.APPLICATION_ID,uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        mDescriptor = descrtpter;
-        refrehView();
+
     }
 
     @Override
@@ -127,13 +130,6 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        MediaFileDescrtpter descrtpter = getIntent().getParcelableExtra("data");
-        if(descrtpter != null && descrtpter.getData()!=null ) {
-            File file = new File(descrtpter.getData());
-            Uri uri = FileProvider.getUriForFile(getBaseContext(), BuildConfig.APPLICATION_ID.concat(".provider"),file);
-            grantUriPermission(BuildConfig.APPLICATION_ID,uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        mDescriptor = descrtpter;
         refrehView();
     }
 
@@ -143,6 +139,18 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     void refrehView() {
+
+        try {
+            if(iAudioPlayService!=null && iAudioPlayService.getCurrentSond() != null) {
+                mDescriptor = MediaFileDescrtpter.unmarshall(iAudioPlayService.getCurrentSond());
+                Log.d("jxc","refrehView" + mDescriptor.getTitle());
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        if(mDescriptor == null) return;
+
         NativeLib nativeLib = new NativeLib();
 
         int length =0 ;
