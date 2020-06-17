@@ -98,8 +98,6 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
 
                 try {
                     if(iAudioPlayService!=null && iAudioPlayService.getCurrentSond() != null) {
-                        mDescriptor = MediaFileDescrtpter.unmarshall(iAudioPlayService.getCurrentSond());
-                        Log.d("jxc","onNewIntent" + mDescriptor.getTitle());
                         refrehView();
                     }
                 } catch (RemoteException e) {
@@ -143,7 +141,7 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
         try {
             if(iAudioPlayService!=null && iAudioPlayService.getCurrentSond() != null) {
                 mDescriptor = MediaFileDescrtpter.unmarshall(iAudioPlayService.getCurrentSond());
-                Log.d("jxc","refrehView" + mDescriptor.getTitle());
+                Log.d("jxc","refrehView dump song:" + mDescriptor.getTitle() +" path " + mDescriptor.getData());
             }
         } catch (RemoteException e) {
             e.printStackTrace();

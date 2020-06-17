@@ -69,6 +69,7 @@ public class AudioPlayService extends Service implements
 
     boolean isForegroundState = false;
 
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -343,21 +344,26 @@ public class AudioPlayService extends Service implements
 
     @Override
     public void onAudioFocusChange(int i) {
-
         switch (i) {
             case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
             case AudioManager.AUDIOFOCUS_LOSS:
-            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                if (mediaPlayer!= null &&mediaPlayer.isPlaying()) {
+                    onPlayPause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                if (mediaPlayer!= null &&!mediaPlayer.isPlaying() ) {
+                    onPlayStart();
                 }
                 break;
             default:
-                if (!mediaPlayer.isPlaying() ) {
-                    mediaPlayer.start();
-                }
         }
+        Log.d("jxc","onAudioFocusChange focus state:" + AudioUtils.AudioStateToStr(i));
     }
 
 
