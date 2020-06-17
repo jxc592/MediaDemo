@@ -1,5 +1,6 @@
 package com.example.myapplication.audio;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
@@ -17,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +35,7 @@ import com.example.myapplication.BuildConfig;
 import com.example.myapplication.IAudioPlayService;
 import com.example.myapplication.R;
 import com.example.myapplication.bean.MediaFileDescrtpter;
+import com.example.myapplication.ui.main.BaseHandlerActivity;
 import com.example.myapplication.util.BitmapUtils;
 import com.example.myapplication.util.NativeLib;
 import com.example.myapplication.widget.CircleImageDrawable;
@@ -41,7 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class AudioPlayActivity extends AppCompatActivity implements View.OnClickListener,AudioAction {
+public class AudioPlayActivity extends BaseHandlerActivity implements View.OnClickListener,AudioAction {
 
 
     MediaFileDescrtpter mDescriptor;
@@ -57,6 +60,9 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
     AudioActionReciver mreciver;
     ServiceConnection mServiceConnection;
     IAudioPlayService iAudioPlayService;
+
+     protected final int MSG_CODE_REFRESH_IMAGEVIEW = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,14 +156,8 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
         if(mDescriptor == null) return;
 
         NativeLib nativeLib = new NativeLib();
-
         int length =0 ;
         byte[] data = nativeLib.parserAlbumArt(mDescriptor.getData());
-
-
-        float activityWidth = getWindow().getDecorView().getMeasuredWidth();
-        float imageViewWidth = activityWidth/5*3;
-
         if(data != null && data.length >0) {
             Bitmap source = BitmapFactory.decodeByteArray(data,0,data.length);
             Log.d("jxc","bitmap == null ? " + (source == null ? "true" :"false"));
@@ -172,12 +172,8 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
                     decodeResource(getResources(),R.drawable.profile_default_bg_small)));
         }
 
-        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) iv.getLayoutParams();
-        lp.width = (int) imageViewWidth;
-        lp.width = (int) imageViewWidth;
-        iv.setLayoutParams(lp);
 
-
+        reLayoutAlbumArt();
 
         tv_title.setText(mDescriptor.getTitle());
         tv_author.setText(mDescriptor.getArtist());
@@ -190,6 +186,20 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
         getSupportActionBar().setTitle(mDescriptor.getTitle());
     }
 
+
+    void reLayoutAlbumArt(){
+        float activityWidth = getWindow().getDecorView().getMeasuredWidth();
+        float imageViewWidth;
+        if (activityWidth == 0) {
+            sendEmptyMessageAtTime(MSG_CODE_REFRESH_IMAGEVIEW, System.currentTimeMillis() + 50);
+        } else {
+            imageViewWidth = activityWidth / 5 * 3;
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) iv.getLayoutParams();
+            lp.width = (int) imageViewWidth;
+            lp.width = (int) imageViewWidth;
+            iv.setLayoutParams(lp);
+        }
+    }
 
     @Override
     public void onClick(View v) {
@@ -257,5 +267,20 @@ public class AudioPlayActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onNext() {
 
+    }
+
+    @Override
+    protected void handleMessage(@NonNull Message msg) {
+        super.handleMessage(msg);
+        if(isFinishing() || isDestroyed()) {
+            return;
+        }
+        switch (msg.what) {
+            case MSG_CODE_REFRESH_IMAGEVIEW:
+                reLayoutAlbumArt();
+                break;
+            default:
+                    break;
+        }
     }
 }

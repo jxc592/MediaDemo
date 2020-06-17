@@ -2,6 +2,8 @@ package com.example.myapplication.image;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.gesture.GestureOverlayView;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
@@ -9,7 +11,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -23,11 +28,13 @@ import com.example.myapplication.bean.MediaFileDescrtpter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class ImageDisplayActivity extends AppCompatActivity  {
+public class ImageDisplayActivity extends AppCompatActivity  implements GestureDetector.OnGestureListener {
 
     ImageView mImageView;
 
@@ -38,6 +45,17 @@ public class ImageDisplayActivity extends AppCompatActivity  {
     Handler mHander;
 
     Bitmap mBitmap;
+
+    List<MediaFileDescrtpter> mDataList  = new ArrayList<>();
+
+
+    enum ACTION {
+        PRE,
+        NEXT,
+        ZOOM
+    }
+
+    GestureDetector mGestureDetector ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +74,26 @@ public class ImageDisplayActivity extends AppCompatActivity  {
         };
         //getActionBar().hide();
         refresh();
+
+        mGestureDetector = new GestureDetector(this,this);
+
+        Cursor imageCursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,null,null,null,"_ID desc");
+        if(imageCursor != null ) {
+            while (imageCursor.moveToNext()) {
+                int id =imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns._ID));
+                String data =imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                String title = imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.TITLE));
+
+                int height = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.HEIGHT));
+                int width = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.WIDTH));
+                String desctiption = imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.DESCRIPTION));
+                long duration = imageCursor.getLong(imageCursor.getColumnIndex(MediaStore.Images.ImageColumns.DURATION));
+
+                MediaFileDescrtpter mediaFileDescrtpter = new MediaFileDescrtpter( id,  data ,title,  "",  "",  "",  "",  height,  width,  desctiption,  duration,  "",  "");
+                mDataList.add(mediaFileDescrtpter);
+            }
+            imageCursor.close();
+        }
 
     }
 
@@ -153,5 +191,43 @@ public class ImageDisplayActivity extends AppCompatActivity  {
         if(mBitmap != null) {
             mBitmap.recycle();
         }
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        float e1x = e1.getX();
+        float e2x = e2.getX();
+
+        if(velocityX > velocityY) {
+            if(e1x >e2x) {
+
+            }
+        }
+        return false;
     }
 }

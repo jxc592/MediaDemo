@@ -9,7 +9,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.provider.MediaStore;
@@ -93,25 +96,43 @@ public class AudioFragment extends PlaceholderFragment {
         TextView title;
         TextView author;
 
+        Handler mHander;
         Bitmap mSouce;
+
+        final int MSG_SET_BITMAP = 0;
         public AudidViewHolder(@NonNull View itemView) {
             super(itemView);
             container = itemView;
             imageView = container.findViewById(R.id.iv_thumbuil);
             title = container.findViewById(R.id.tv_title);
             author = container.findViewById(R.id.tv_author);
+            mHander = new Handler() {
+                @Override
+                public void handleMessage(@NonNull Message msg) {
+                    super.handleMessage(msg);
+                    Bitmap bitmap = (Bitmap) msg.obj;
+                    imageView.setImageBitmap(bitmap);
+                }
+            };
         }
 
         void initData(final MediaFileDescrtpter mediaFileDescrtpter) {
 
-            Bitmap source = BitmapUtils.getAlbumArt(getActivity(),mediaFileDescrtpter.getData());
-            if(source != null) {
-                imageView.setImageBitmap(source);
-                mSouce = source;
-            } else {
-                imageView.setImageBitmap(null);
-                mSouce = null;
-            }
+            new Thread(){
+                @Override
+                public void run() {
+                    super.run();
+                    Bitmap source = BitmapUtils.getAlbumArt(getActivity(),mediaFileDescrtpter.getData());
+                    if(source == null) {
+                        source = BitmapFactory.decodeResource(getResources(),R.drawable.profile_default_bg_small);
+                    }
+                    Message message = new Message();
+                    message.what = MSG_SET_BITMAP;
+                    message.obj = source;
+                    mHander.sendMessage(message);
+                }
+            }.start();
+
             String  strTitle = mediaFileDescrtpter.getTitle();
 
             if(strTitle !=null && strTitle.length() > 30) {
@@ -142,7 +163,7 @@ public class AudioFragment extends PlaceholderFragment {
 
 
         void recycle(){
-            if(mSouce != null) mSouce.recycle();
+            if(mSouce != null) {mSouce.recycle(); mSouce = null;}
         }
     }
 

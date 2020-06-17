@@ -282,7 +282,8 @@ public class AudioPlayService extends Service implements
 
         if(successSet) {
             if(isForegroundState) {
-                mNotificationManager.notify(1,createNoti(mediaFileDescrtpter));
+                startForeground(1,createNoti(mediaFileDescrtpter));
+                //mNotificationManager.notify(1,createNoti(mediaFileDescrtpter));
             } else {
                 startForeground(1,createNoti(null));
                 isForegroundState = true;

@@ -16,9 +16,8 @@
         <ImageView
             android:layout_gravity="center_horizontal"
             android:id="@+id/iv_thumbuil"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/sym_def_app_icon" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:layout_marginTop="5dp"
@@ -51,6 +50,7 @@
             android:text="" />
 
         <TextView
+            android:visibility="invisible"
             android:layout_marginTop="5dp"
             android:layout_gravity="center_horizontal"
             android:textColor="@android:color/white"
