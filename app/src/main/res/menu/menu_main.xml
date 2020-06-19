@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_record"
+        android:enabled="true"
+        android:title="record"
+        android:visible="true"
+        app:showAsAction="collapseActionView|withText" />
+    <item
+        android:id="@+id/menu_videoedit"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="video edit"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+</menu>

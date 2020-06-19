@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VideoActivity extends BaseHandlerActivity {
+public class VideoActivity extends BaseHandlerActivity implements View.OnClickListener {
 
 
     MediaFileDescrtpter  mDescrtpter;
@@ -47,6 +47,7 @@ public class VideoActivity extends BaseHandlerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video);
+        getSupportActionBar().setTitle("video edit");
         rv_list = findViewById(R.id.rv_source_list);
         bt_done = findViewById(R.id.bt_done);
         bt_pick = findViewById(R.id.bt_pick);
@@ -58,7 +59,7 @@ public class VideoActivity extends BaseHandlerActivity {
         mAdapter = new SourceAdapter();
         rv_list.setAdapter(mAdapter);
 
-
+        bt_pick.setOnClickListener(this);
     }
 
     @Override
@@ -117,6 +118,15 @@ public class VideoActivity extends BaseHandlerActivity {
             }
         }
     }
+
+    @Override
+    public void onClick(View v) {
+        if(v.getId() == R.id.bt_pick) {
+            getContent();
+        }
+    }
+
+
 
     class SourceViewHolder extends  RecyclerView.ViewHolder {
 

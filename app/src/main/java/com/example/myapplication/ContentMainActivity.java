@@ -1,13 +1,16 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.myapplication.util.PermissionUtils;
+import com.example.myapplication.video.VideoActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,7 +20,7 @@ import android.view.View;
 
 import com.example.myapplication.ui.main.SectionsPagerAdapter;
 
-public class ContentMainActivity extends AppCompatActivity {
+public class ContentMainActivity extends AppCompatActivity implements MenuItem.OnMenuItemClickListener {
 
 
     // Used to load the 'native-lib' library on application startup.
@@ -35,11 +38,20 @@ public class ContentMainActivity extends AppCompatActivity {
             return;
         }
         init();
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main,menu);
+        menu.findItem(R.id.menu_videoedit).setOnMenuItemClickListener(this);
+        return super.onCreateOptionsMenu(menu);
     }
 
     void init(){
+
         setContentView(R.layout.activity_content_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
         ViewPager viewPager = findViewById(R.id.view_pager);
         viewPager.setAdapter(sectionsPagerAdapter);
@@ -50,8 +62,8 @@ public class ContentMainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(ContentMainActivity.this, VideoActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -64,4 +76,13 @@ public class ContentMainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        if(item.getItemId() == R.id.menu_videoedit) {
+            Intent intent = new Intent(this,VideoActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
 }

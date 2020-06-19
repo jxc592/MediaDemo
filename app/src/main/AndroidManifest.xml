@@ -32,11 +32,11 @@
         <activity
             android:name=".ContentMainActivity"
             android:theme="@style/AppTheme.NoActionBar">
-            <!--<intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter> -->
+            </intent-filter>
         </activity>
         <activity
             android:name=".video.VideoPlayActivity"
@@ -45,11 +45,7 @@
             android:name=".image.ImageDisplayActivity"
             android:launchMode="singleTask" />
         <activity android:name=".video.VideoActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <provider
             android:name="androidx.core.content.FileProvider"
