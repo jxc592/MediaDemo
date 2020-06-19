@@ -56,6 +56,7 @@ public class MediaPickerActivity extends AppCompatActivity implements MenuItem.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_picker);
 
+        getSupportActionBar().setTitle("video picker");
         mDataList = new ArrayList<>();
         mCheckStates = new HashMap<>();
         mListView = findViewById(R.id.main_list_view);

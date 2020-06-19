@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.example.myapplication.audio.RecorderActivity;
 import com.example.myapplication.util.PermissionUtils;
 import com.example.myapplication.video.VideoActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -44,6 +45,7 @@ public class ContentMainActivity extends AppCompatActivity implements MenuItem.O
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main,menu);
         menu.findItem(R.id.menu_videoedit).setOnMenuItemClickListener(this);
+        menu.findItem(R.id.menu_record).setOnMenuItemClickListener(this);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -80,6 +82,10 @@ public class ContentMainActivity extends AppCompatActivity implements MenuItem.O
     public boolean onMenuItemClick(MenuItem item) {
         if(item.getItemId() == R.id.menu_videoedit) {
             Intent intent = new Intent(this,VideoActivity.class);
+            startActivity(intent);
+            return true;
+        } else if( item.getItemId() == R.id.menu_record) {
+            Intent intent = new Intent(this, RecorderActivity.class);
             startActivity(intent);
             return true;
         }

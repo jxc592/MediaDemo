@@ -349,7 +349,6 @@ public class MediaUtils {
     void decodeVideo(String path) throws IOException {
         MediaExtractor extractor = new MediaExtractor();
         extractor.setDataSource(path);
-
         int trackCount = extractor.getTrackCount();
 
         for(int i=0;i<trackCount;i++) {
@@ -384,7 +383,6 @@ public class MediaUtils {
                     framesize = (int) value;
                 Log.d("jxc","decode: dump mediaformat : key:" + key + "valuetype :" + valueType +",value:"+value);
             }
-
 
             if(mime.startsWith("audio/"))  {
 
@@ -457,24 +455,81 @@ public class MediaUtils {
                                 decodec.releaseOutputBuffer(outIndex, false);
                                 break;
                         }
-
                     }
-
-
-
                 }
-
-
-                long presentTime =0;
-                decodec.dequeueInputBuffer(100);
-
-
             }
         }
     }
 
-    void decodeAudio(){
+
+    /** 这里之前遇到一个坑，以为这个packetLen是adts头的长度，也就是7，仔细看了下代码，发现这个不是adts头的长度，而是一帧音频的长度
+     * @param packet    一帧数据（包含adts头长度）
+     * @param packetLen 一帧数据（包含adts头）的长度
+     */
+    public static void addADTStoPacket(byte[] packet, int packetLen) {
+        int profile = 2; // AAC LC
+        int freqIdx = getFreqIdx(44100);
+        int chanCfg = 2; // CPE
+
+        // fill in ADTS data
+        packet[0] = (byte) 0xFF;
+        packet[1] = (byte) 0xF9;
+        packet[2] = (byte) (((profile - 1) << 6) + (freqIdx << 2) + (chanCfg >> 2));
+        packet[3] = (byte) (((chanCfg & 3) << 6) + (packetLen >> 11));
+        packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
+        packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
+        packet[6] = (byte) 0xFC;
+    }
 
 
+    private static int getFreqIdx(int sampleRate) {
+        int freqIdx;
+
+        switch (sampleRate) {
+            case 96000:
+                freqIdx = 0;
+                break;
+            case 88200:
+                freqIdx = 1;
+                break;
+            case 64000:
+                freqIdx = 2;
+                break;
+            case 48000:
+                freqIdx = 3;
+                break;
+            case 44100:
+                freqIdx = 4;
+                break;
+            case 32000:
+                freqIdx = 5;
+                break;
+            case 24000:
+                freqIdx = 6;
+                break;
+            case 22050:
+                freqIdx = 7;
+                break;
+            case 16000:
+                freqIdx = 8;
+                break;
+            case 12000:
+                freqIdx = 9;
+                break;
+            case 11025:
+                freqIdx = 10;
+                break;
+            case 8000:
+                freqIdx = 11;
+                break;
+            case 7350:
+                freqIdx = 12;
+                break;
+            default:
+                freqIdx = 8;
+                break;
+        }
+
+        return freqIdx;
     }
 }

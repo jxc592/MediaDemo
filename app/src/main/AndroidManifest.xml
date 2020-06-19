@@ -16,10 +16,8 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".video.MediaPickerActivity">
-
-
-        </activity>
+        <activity android:name=".audio.RecorderActivity"></activity>
+        <activity android:name=".video.MediaPickerActivity"></activity>
 
         <service
             android:name=".audio.AudioPlayService"
@@ -41,12 +39,12 @@
         <activity
             android:name=".video.VideoPlayActivity"
             android:launchMode="singleTask" />
+
         <activity
             android:name=".image.ImageDisplayActivity"
             android:launchMode="singleTask" />
-        <activity android:name=".video.VideoActivity">
+        <activity android:name=".video.VideoActivity"></activity>
 
-        </activity>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.myapplication.provider"
