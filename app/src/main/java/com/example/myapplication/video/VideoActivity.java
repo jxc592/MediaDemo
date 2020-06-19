@@ -1,6 +1,7 @@
 package com.example.myapplication.video;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Message;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
@@ -19,10 +21,16 @@ import android.widget.Button;
 
 import com.example.myapplication.R;
 import com.example.myapplication.bean.MediaFileDescrtpter;
+import com.example.myapplication.media.MediaUtils;
+import com.example.myapplication.ui.main.BaseHandlerActivity;
+
+import org.w3c.dom.ls.LSException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class VideoActivity extends AppCompatActivity {
+public class VideoActivity extends BaseHandlerActivity {
 
 
     MediaFileDescrtpter  mDescrtpter;
@@ -32,6 +40,8 @@ public class VideoActivity extends AppCompatActivity {
     SourceAdapter mAdapter;
 
     SurfaceView mSurfaceView;
+
+    List<MediaFileDescrtpter> mDataList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +66,44 @@ public class VideoActivity extends AppCompatActivity {
         super.onNewIntent(intent);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK) {
+            ArrayList<String> list = data.getStringArrayListExtra("result");
+            if(list != null && list.size() >0 ) {
+                for (String a :list) {
+                    MediaFileDescrtpter mediaFileDescrtpter = MediaFileDescrtpter.unmarshall(a);
+                    boolean exist =false;
+                    for (MediaFileDescrtpter descrtpter : mDataList) {
+                        if( mediaFileDescrtpter.getId() == descrtpter.getId()) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if(!exist) {
+                        mDataList.add(mediaFileDescrtpter);
+                    }
+                }
+
+                for (MediaFileDescrtpter descrtpter :mDataList) {
+
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void handleMessage(@NonNull Message msg) {
+        super.handleMessage(msg);
+    }
+
+    void getContent(){
+        Intent intent = new Intent(VideoActivity.this,MediaPickerActivity.class);
+        startActivityForResult(intent,1);
+    }
+
+
     void refreshView(){
         mDescrtpter = getIntent().getParcelableExtra("data");
         Uri uri = getIntent().getData();
@@ -67,19 +115,7 @@ public class VideoActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-        MediaExtractor extractor = new MediaExtractor();
-
-        MediaMuxer mediaMuxer = new MediaMuxer("",MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-        mediaMuxer.addTrack(MediaFormat.createAudioFormat());
-        mediaMuxer.start();
-        mediaMuxer.writeSampleData();
-
-        MediaFormat mediaFormat = extractor.getTrackFormat(0);
-        mediaFormat.getByteBuffer()
-
-
     }
 
     class SourceViewHolder extends  RecyclerView.ViewHolder {

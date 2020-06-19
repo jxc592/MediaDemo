@@ -29,6 +29,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
+import androidx.collection.LruCache;
 import androidx.core.app.NotificationCompat;
 
 import com.example.myapplication.BuildConfig;
@@ -68,6 +69,10 @@ public class AudioPlayService extends Service implements
 
 
     boolean isForegroundState = false;
+
+
+    //TODO need to import cache solution.
+    //LruCache<Integer,Bitmap> lruCacheBitmap = new LruCache<Integer, Bitmap>(){};
 
 
     @Override

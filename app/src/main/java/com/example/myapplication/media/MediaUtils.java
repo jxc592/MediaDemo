@@ -5,9 +5,15 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.media.MediaPlayer;
 import android.util.Log;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 
 public class MediaUtils {
@@ -45,9 +51,11 @@ public class MediaUtils {
         extractor.selectTrack(videoIndex);//切换到视频通道
         doMP4(videoFormat,extractor,videoIndex);
         extractor.release();
-        compositing();
+        //compositing();
     }
- 
+
+    public static String MP3PATH ="";
+    public static String MP4PATH ="";
     /**
      * 提取MP3
      * @param trackFormat
@@ -164,10 +172,10 @@ public class MediaUtils {
     /**
      * 合成视频和音频
      */
-    public void compositing(){
+    public void compositing(String audioPath,String videoPath,String out){
         MediaExtractor videoExtractor = new MediaExtractor();
         try {
-            videoExtractor.setDataSource(MP4PATH);
+            videoExtractor.setDataSource(videoPath);
  
         MediaFormat videoFormat = null;
         int videoTrackIndex = -1;
@@ -181,7 +189,7 @@ public class MediaUtils {
             }
         }
             MediaExtractor audioExtractor = new MediaExtractor();
-            audioExtractor.setDataSource(MP3PATH);
+            audioExtractor.setDataSource(audioPath);
             MediaFormat audioFormat = null;
             int audioTrackIndex = -1;
             int audioTrackCount = audioExtractor.getTrackCount();
@@ -198,7 +206,7 @@ public class MediaUtils {
             MediaCodec.BufferInfo videoBufferInfo = new MediaCodec.BufferInfo();
             MediaCodec.BufferInfo audioBufferInfo = new MediaCodec.BufferInfo();
  
-            MediaMuxer mediaMuxer = new MediaMuxer(COMPOSITINGPATH, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            MediaMuxer mediaMuxer = new MediaMuxer(out, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
             int writeVideoTrackIndex = mediaMuxer.addTrack(videoFormat);
             int writeAudioTrackIndex = mediaMuxer.addTrack(audioFormat);
             mediaMuxer.start();
@@ -255,6 +263,218 @@ public class MediaUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
- 
+    }
+
+
+    /**
+     * 合成视频和音频
+     */
+    public static void compositVideo(List<String> pathsList, String out){
+
+        try {
+
+            for(String videoPath :pathsList) {
+
+                MediaExtractor videoExtractor = new MediaExtractor();
+                videoExtractor.setDataSource(videoPath);
+
+                MediaFormat videoFormat = null;
+                int videoTrackIndex = -1;
+                int videoTrackCount = videoExtractor.getTrackCount();
+                for (int i = 0; i < videoTrackCount; i++) {
+                    videoFormat = videoExtractor.getTrackFormat(i);
+                    String mimeType = videoFormat.getString(MediaFormat.KEY_MIME);
+                    if (mimeType.startsWith("video/")) {
+                        videoTrackIndex = i;
+                        break;
+                    }
+                }
+
+                videoExtractor.selectTrack(videoTrackIndex);
+
+                MediaCodec.BufferInfo videoBufferInfo = new MediaCodec.BufferInfo();
+
+
+                MediaMuxer mediaMuxer = new MediaMuxer(out, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+                int writeVideoTrackIndex = mediaMuxer.addTrack(videoFormat);
+                mediaMuxer.start();
+
+                ByteBuffer byteBuffer = ByteBuffer.allocate(500 * 1024);
+                long sampleTime = 0l;
+                {
+                    videoExtractor.readSampleData(byteBuffer, 0);
+                    if (videoExtractor.getSampleFlags() == MediaExtractor.SAMPLE_FLAG_SYNC) {
+                        videoExtractor.advance();
+                    }
+                    videoExtractor.readSampleData(byteBuffer, 0);
+                    long secondTime = videoExtractor.getSampleTime();
+                    videoExtractor.advance();
+                    long thirdTime = videoExtractor.getSampleTime();
+                    sampleTime = Math.abs(thirdTime - secondTime);
+                }
+                videoExtractor.unselectTrack(videoTrackIndex);
+                videoExtractor.selectTrack(videoTrackIndex);
+
+                while (true) {
+                    int readVideoSampleSize = videoExtractor.readSampleData(byteBuffer, 0);
+                    if (readVideoSampleSize < 0) {
+                        break;
+                    }
+                    videoBufferInfo.size = readVideoSampleSize;
+                    videoBufferInfo.presentationTimeUs += sampleTime;
+                    videoBufferInfo.offset = 0;
+                    videoBufferInfo.flags = videoExtractor.getSampleFlags();
+                    mediaMuxer.writeSampleData(writeVideoTrackIndex, byteBuffer, videoBufferInfo);
+                    videoExtractor.advance();
+                }
+
+
+                mediaMuxer.stop();
+                mediaMuxer.release();
+                videoExtractor.release();
+
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    void test(){
+
+    }
+
+    void decodeVideo(String path) throws IOException {
+        MediaExtractor extractor = new MediaExtractor();
+        extractor.setDataSource(path);
+
+        int trackCount = extractor.getTrackCount();
+
+        for(int i=0;i<trackCount;i++) {
+            MediaFormat mediaFormat = extractor.getTrackFormat(i);
+            Iterator<String> iterable = mediaFormat.getKeys().iterator();
+            int framesize = 500 * 1024;
+            String mime= null;
+
+            while (iterable.hasNext()) {
+                String key = iterable.next();
+                int valueType = mediaFormat.getValueTypeForKey(key);
+                Object value = null;
+                switch (valueType) {
+                    case MediaFormat.TYPE_FLOAT:
+                        value = mediaFormat.getFloat(key, -1f);
+                        break;
+                    case MediaFormat.TYPE_INTEGER:
+                        value = mediaFormat.getInteger(key, -1);
+                        break;
+                    case MediaFormat.TYPE_LONG:
+                        value = mediaFormat.getLong(key, -1l);
+                        break;
+                    case MediaFormat.TYPE_STRING:
+                        value = mediaFormat.getString(key, "-1");
+                        break;
+                    default:
+                        break;
+                }
+                if(MediaFormat.KEY_MIME.equals(key))
+                    mime = (String) value;
+                if(MediaFormat.KEY_MAX_INPUT_SIZE.equals(key))
+                    framesize = (int) value;
+                Log.d("jxc","decode: dump mediaformat : key:" + key + "valuetype :" + valueType +",value:"+value);
+            }
+
+
+            if(mime.startsWith("audio/"))  {
+
+                extractor.selectTrack(i);
+
+                MediaCodec decodec = MediaCodec.createDecoderByType(mediaFormat.getString(MediaFormat.KEY_MIME));
+                decodec.configure(mediaFormat,null,null,0);
+                decodec.start();
+
+
+                //ByteBuffer byteBuffer = ByteBuffer.allocate(framesize);
+
+                MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+
+                while (true) {
+                    int inIndex = decodec.dequeueInputBuffer(50);
+
+                    if(inIndex >=0) {
+                        ByteBuffer byteBuffer = decodec.getInputBuffer(inIndex);
+
+                        int readAudioSampleSize = extractor.readSampleData(byteBuffer, 0);
+
+
+                        if (readAudioSampleSize < 0) {
+                            Log.d("jxc", "InputBuffer BUFFER_FLAG_END_OF_STREAM");
+                            decodec.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                            break;
+                        }
+
+
+
+                        bufferInfo.size = readAudioSampleSize;
+                        bufferInfo.presentationTimeUs = extractor.getSampleTime();
+                        bufferInfo.offset = 0;
+                        bufferInfo.flags = extractor.getSampleFlags();
+
+                        //TODO if format same ,donot decoder.
+                        //mediaMuxer.writeSampleData(writeAudioTrackIndex, byteBuffer, audioBufferInfo);
+
+                        if(byteBuffer == null) {
+                            continue;
+                        }
+                        decodec.queueInputBuffer(inIndex,0,bufferInfo.size,bufferInfo.presentationTimeUs,bufferInfo.flags);
+
+
+                        int outIndex = decodec.dequeueOutputBuffer(bufferInfo,50);
+
+                        switch (outIndex) {
+
+                            case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED:
+                                MediaFormat format = decodec.getOutputFormat();
+                                Log.d("jxc", "New format " + format);
+
+                                break;
+                            case MediaCodec.INFO_TRY_AGAIN_LATER:
+                                Log.d("jxc", "dequeueOutputBuffer timed out!");
+                                break;
+
+                            default:
+                                ByteBuffer outBuffer = decodec.getOutputBuffer(outIndex);
+                                Log.v("jxc", "We can't use this buffer but render it due to the API limit, " + outBuffer);
+
+                                final byte[] chunk = new byte[bufferInfo.size];
+                                outBuffer.get(chunk); // Read the buffer all at once
+                                outBuffer.clear(); // ** MUST DO!!! OTHERWISE THE NEXT TIME YOU GET THIS SAME BUFFER BAD THINGS WILL HAPPEN
+
+                                MediaFormat mFormat = decodec.getOutputFormat();
+                                //TODO dear with chunk data. the decoded data.
+
+                                decodec.releaseOutputBuffer(outIndex, false);
+                                break;
+                        }
+
+                    }
+
+
+
+                }
+
+
+                long presentTime =0;
+                decodec.dequeueInputBuffer(100);
+
+
+            }
+        }
+    }
+
+    void decodeAudio(){
+
+
     }
 }
