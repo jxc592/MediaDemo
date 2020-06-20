@@ -56,7 +56,12 @@ public class RecorderActivity extends AppCompatActivity {
                            public void onAudioDecoderedBufferAvailable(byte[] data) {
                                track.write(data,0,data.length);
                            }
-                       });
+
+                            @Override
+                            public void onVideoDecoderedBufferAvailAble(byte[] data) {
+
+                            }
+                        });
                         mediaParser.decodeAudio();
 
                     }

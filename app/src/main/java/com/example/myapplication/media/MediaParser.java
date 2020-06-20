@@ -3,7 +3,9 @@ package com.example.myapplication.media;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Surface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,7 +33,9 @@ public class MediaParser {
     CodecCallBack mCodecCallBack;
     public interface CodecCallBack {
         void onAudioDecoderedBufferAvailable(byte[] data);
+        void onVideoDecoderedBufferAvailAble(byte[] data);
     }
+
 
     public MediaFormat getVideoFormat() {
         return mVideoFormat;
@@ -67,11 +71,11 @@ public class MediaParser {
 
 
     public void setCodecCallBack(MediaParser.CodecCallBack callBack) {
-        this.mCodecCall = callBack;
+        this.mCodecCallBack = callBack;
     }
 
 
-    //block ui
+    // ui block
     public MediaParser(String mVideoPath) throws IOException {
         this.mVideoPath = mVideoPath;
         mExtractor = new MediaExtractor();
@@ -229,11 +233,15 @@ public class MediaParser {
     }
 
     MediaCodec initVideoDecoder() {
+        initVideoDecoder(null);
+    }
+    MediaCodec initVideoDecoder(Surface surface) {
         MediaCodec codec = null;
         boolean isErrOccured =false;
         try {
             codec = MediaCodec.createDecoderByType(mVideoFormat.getString(MediaFormat.KEY_MIME));
-            codec.configure(mVideoFormat,null,null,0);
+            codec.configure(mVideoFormat,surface,null,0);
+            codec.start();
         } catch (IOException e) {
             e.printStackTrace();
             Log.d(TAG,"create codec error");
@@ -244,6 +252,26 @@ public class MediaParser {
         else
             return null;
     }
+
+
+    MediaCodec initEncoder(MediaFormat format) {
+        MediaCodec codec = null;
+        boolean isErrOccured =false;
+        try {
+            codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME));
+            codec.configure(format,null,null,0);
+            codec.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG,"create codec error");
+            isErrOccured = true;
+        }
+        if(!isErrOccured)
+            return codec;
+        else
+            return null;
+    }
+
 
     public void decodeAudio() {
         if(!hasAudio) {
@@ -309,6 +337,7 @@ public class MediaParser {
                 Log.d(TAG, "New format " + format);
             }else if (outputIdx == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 Log.d(TAG, "dequeueOutputBuffer timed out!");
+                continue;
             } else {
                     ByteBuffer outBuffer = codec.getOutputBuffer(outputIdx);
                     Log.v(TAG, "decoded buffer available" + outBuffer);
@@ -332,13 +361,97 @@ public class MediaParser {
         mExtractor.unselectTrack(mAudioTrackIdx);
     }
 
-    public  void encodeAudio(){
+    public void encodeTrack(MediaFormat format){
 
     }
 
+    public void decodeVideoAndRender(Surface surface) {
+        decodeVideo(surface);
+    }
+
+    public void decodeVideo(){
+        decodeVideo(null);
+    }
+
+    protected void decodeVideo(Surface surface){
+        if(!hasVideo) {
+            Log.d(TAG,"decodeVideo no video track ,ignore decode action.");
+            return;
+        }
+        mExtractor.selectTrack(mVideoTrackIdx);
+        MediaCodec codec = initVideoDecoder(surface);
+        if(codec == null) return;
+
+        boolean isErrOccur = false;
+        int sampleSize = -1;
+
+        while (true) {
+            ByteBuffer byteBuffer = null;
+            int inputIdx = -1;
+            try {
+                inputIdx = codec.dequeueInputBuffer(20);
+            } catch (Exception e) {
+                isErrOccur = true;
+            }
+
+            if(isErrOccur) {
+                Log.d(TAG,"decodeVideo: dequeueInputBuffer enter error.");
+                break;
+            }
+
+            if(inputIdx >= 0) {
+                byteBuffer = codec.getInputBuffer(inputIdx);
+            } else {
+                Log.d(TAG,"decodeVideo: dequeueInputBuffer failed,retry it.");
+                continue;
+
+            }
+            // read encodecd avpacket.
+            sampleSize = mExtractor.readSampleData(byteBuffer,0);
+            if(sampleSize < 0) {
+                Log.d(TAG,"decodeVideo: read completed.");
+                codec.queueInputBuffer(inputIdx, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                break;
+            }
+            // add decode action to queue
+            codec.queueInputBuffer(inputIdx,0,sampleSize,mExtractor.getSampleTime(),mExtractor.getSampleFlags());
+
+            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+            bufferInfo.flags = mExtractor.getSampleFlags();
+            bufferInfo.presentationTimeUs = mExtractor.getSampleTime();
+            bufferInfo.offset=0;
+            bufferInfo.size = sampleSize;
+
+            int outputIdx = codec.dequeueOutputBuffer(bufferInfo,10);
+            if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                MediaFormat format = codec.getOutputFormat();
+                Log.d(TAG, "New format " + format);
+            }else if (outputIdx == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                Log.d(TAG, "dequeueOutputBuffer timed out!");
+                continue;
+            } else {
+                ByteBuffer outBuffer = codec.getOutputBuffer(outputIdx);
+                Log.v(TAG, "decoded buffer available" + outBuffer);
+                final byte[] chunk = new byte[bufferInfo.size];
+                outBuffer.get(chunk); // Read the buffer all at once
+                outBuffer.clear(); // clear and release.
+                MediaFormat format = codec.getOutputFormat();
+                if(mCodecCallBack != null) {
+                    mCodecCallBack.onVideoDecoderedBufferAvailAble(chunk);
+                }
+                codec.releaseOutputBuffer(outputIdx, false);
+            }
+
+            mExtractor.advance();
+        }
+        codec.stop();
+        codec.release();
+
+
+    }
     public void dumpVideoFormat() {
         if(!hasVideo) {
-            Log.d(TAG,"no audio format to dump");
+            Log.d(TAG,"no video format to dump");
             return;
         }
         Iterator<String> iterable = mVideoFormat.getKeys().iterator();

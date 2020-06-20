@@ -15,4 +15,56 @@
         android:title="video edit"
         android:visible="true"
         app:showAsAction="collapseActionView" />
+    <item
+        android:id="@+id/menu_audio_decode"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="audio decode"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+    <item
+        android:id="@+id/menu_audio_encode"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="audio encode"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+    <item
+        android:id="@+id/menu_video_decode"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="video_decode"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+    <item
+        android:id="@+id/menu_audio_extractor"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="extractor audio"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+
+    <item
+        android:id="@+id/menu_video_extractor"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="extractor video"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+
+    <item
+        android:id="@+id/menu_image_decode"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="image2yuv"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+
+    <item
+        android:id="@+id/menu_image_decode_rgb"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="image2RGB"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
 </menu>
