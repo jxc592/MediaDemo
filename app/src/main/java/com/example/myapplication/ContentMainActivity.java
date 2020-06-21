@@ -6,6 +6,7 @@ import android.os.Bundle;
 import com.example.myapplication.audio.RecorderActivity;
 import com.example.myapplication.util.PermissionUtils;
 import com.example.myapplication.video.VideoActivity;
+import com.example.myapplication.video.VideoMuxerActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -64,7 +65,7 @@ public class ContentMainActivity extends AppCompatActivity implements MenuItem.O
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ContentMainActivity.this, VideoActivity.class);
+                Intent intent = new Intent(ContentMainActivity.this, VideoMuxerActivity.class);
                 startActivity(intent);
             }
         });

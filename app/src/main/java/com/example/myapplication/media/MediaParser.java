@@ -32,8 +32,8 @@ public class MediaParser {
 
     CodecCallBack mCodecCallBack;
     public interface CodecCallBack {
-        void onAudioDecoderedBufferAvailable(byte[] data);
-        void onVideoDecoderedBufferAvailAble(byte[] data);
+        void onAudioDecoderedBufferAvailable(byte[] data, MediaCodec.BufferInfo info);
+        void onVideoDecoderedBufferAvailAble(byte[] data,MediaCodec.BufferInfo info);
     }
 
 
@@ -233,7 +233,7 @@ public class MediaParser {
     }
 
     MediaCodec initVideoDecoder() {
-        initVideoDecoder(null);
+        return initVideoDecoder(null);
     }
     MediaCodec initVideoDecoder(Surface surface) {
         MediaCodec codec = null;
@@ -322,22 +322,24 @@ public class MediaParser {
                 byte[] aacData = new byte[adtsPktLength];
                 MediaUtils.addADTStoPacket(aacData,adtsPktLength);
                 System.arraycopy(data,0,aacData,7,sampleSize);
+                byteBuffer.clear();
+                byteBuffer.put(aacData);
+
                 codec.queueInputBuffer(inputIdx,0,adtsPktLength,mExtractor.getSampleTime(),mExtractor.getSampleFlags());
                 bufferInfo.size = adtsPktLength;
 
-                byteBuffer.clear();
-                byteBuffer.put(aacData);
+
             } else {
                 codec.queueInputBuffer(inputIdx, 0, sampleSize, mExtractor.getSampleTime(), mExtractor.getSampleFlags());
             }
 
-            int outputIdx = codec.dequeueOutputBuffer(bufferInfo,10);
+            int outputIdx = codec.dequeueOutputBuffer(bufferInfo,100);
             if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 MediaFormat format = codec.getOutputFormat();
                 Log.d(TAG, "New format " + format);
             }else if (outputIdx == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 Log.d(TAG, "dequeueOutputBuffer timed out!");
-                continue;
+                //continue;
             } else {
                     ByteBuffer outBuffer = codec.getOutputBuffer(outputIdx);
                     Log.v(TAG, "decoded buffer available" + outBuffer);
@@ -346,7 +348,7 @@ public class MediaParser {
                     outBuffer.clear(); // clear and release.
                     MediaFormat format = codec.getOutputFormat();
                     if(mCodecCallBack != null) {
-                        mCodecCallBack.onAudioDecoderedBufferAvailable(chunk);
+                        mCodecCallBack.onAudioDecoderedBufferAvailable(chunk,bufferInfo);
                     }
                     codec.releaseOutputBuffer(outputIdx, false);
             }
@@ -389,7 +391,7 @@ public class MediaParser {
             ByteBuffer byteBuffer = null;
             int inputIdx = -1;
             try {
-                inputIdx = codec.dequeueInputBuffer(20);
+                inputIdx = codec.dequeueInputBuffer(1000);
             } catch (Exception e) {
                 isErrOccur = true;
             }
@@ -404,7 +406,6 @@ public class MediaParser {
             } else {
                 Log.d(TAG,"decodeVideo: dequeueInputBuffer failed,retry it.");
                 continue;
-
             }
             // read encodecd avpacket.
             sampleSize = mExtractor.readSampleData(byteBuffer,0);
@@ -422,13 +423,13 @@ public class MediaParser {
             bufferInfo.offset=0;
             bufferInfo.size = sampleSize;
 
-            int outputIdx = codec.dequeueOutputBuffer(bufferInfo,10);
+            int outputIdx = codec.dequeueOutputBuffer(bufferInfo,1000);
             if (outputIdx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 MediaFormat format = codec.getOutputFormat();
                 Log.d(TAG, "New format " + format);
             }else if (outputIdx == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 Log.d(TAG, "dequeueOutputBuffer timed out!");
-                continue;
+                //continue;
             } else {
                 ByteBuffer outBuffer = codec.getOutputBuffer(outputIdx);
                 Log.v(TAG, "decoded buffer available" + outBuffer);
@@ -437,7 +438,7 @@ public class MediaParser {
                 outBuffer.clear(); // clear and release.
                 MediaFormat format = codec.getOutputFormat();
                 if(mCodecCallBack != null) {
-                    mCodecCallBack.onVideoDecoderedBufferAvailAble(chunk);
+                    mCodecCallBack.onVideoDecoderedBufferAvailAble(chunk,bufferInfo);
                 }
                 codec.releaseOutputBuffer(outputIdx, false);
             }

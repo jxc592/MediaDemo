@@ -24,8 +24,18 @@ public class SimpleMediaMuxer {
     byte videoIdx = -1;
 
 
-    MediaMuxer mediaMuxer
+    MediaMuxer mediaMuxer;
+    MediaCodec mVideoCodec;
+    MediaCodec mAudioCodec;
 
+    long mLastAudioPresentationTimeUs = 0;
+    long mLastVideopresentationTimeUs = 0;
+
+    long mCachedAudioPresentationTimeUs = 0;
+    long mCachedVideopresentationTimeUs = 0;
+
+    boolean audioAppendFlag = false;
+    boolean videoAppendFlag = false;
     // create aac audio format
     public static MediaFormat createSimpleAudioFormat (int sampleRate,int channel) {
         MediaFormat format = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC,sampleRate,channel);
@@ -54,23 +64,65 @@ public class SimpleMediaMuxer {
             mVidioFormat = format;
             videoIdx = (byte) formats.indexOf(format);
         }
+        mediaMuxer.addTrack(format);
     }
 
-    void start(){
+    public void start(){
         if(mVidioFormat != null) hasVideo = true;
         if(mAudioFormat != null) hasAudio = true;
         mediaMuxer.start();
     }
 
-    MediaCodec initEncoder(MediaFormat format) throws IOException {
-        MediaCodec codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME));
+
+    public void stop(){
+        if(hasAudio && mAudioCodec !=null) {
+            mAudioCodec.stop();
+            mAudioCodec.release();
+        }
+        if(hasVideo && mVideoCodec != null) {
+            mVideoCodec.stop();
+            mVideoCodec.release();
+        }
+        mediaMuxer.stop();
+        mediaMuxer.release();
+    }
+
+    MediaCodec initEncoder(MediaFormat format) {
+        MediaCodec codec = null;
+        try {
+            codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME));
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG,"initEncoder error");
+            return null;
+        }
         codec.configure(format,null,null,0);
         codec.start();
         return codec;
     }
 
     public ByteBuffer encodeAudio(byte[] data, MediaCodec.BufferInfo info)  {
-        //encode(data,)
+        if(mAudioCodec == null) {
+            mAudioCodec = initEncoder(mAudioFormat);
+            if(mAudioCodec == null)
+            {
+                Log.d(TAG,"encodeAudio return dueto codec not ready");
+                return null;
+            }
+        }
+        return encode(data,mAudioCodec,info);
+    }
+
+    public ByteBuffer encodeVideo(byte[] data, MediaCodec.BufferInfo info)  {
+        if(mVideoCodec == null) {
+            mVideoCodec = initEncoder(mAudioFormat);
+            if(mVideoCodec == null)
+            {
+                Log.d(TAG,"encodeVideo return dueto codec not ready");
+                return null;
+            }
+        }
+        return encode(data,mVideoCodec,info);
     }
 
     public ByteBuffer encode(byte[] data, MediaCodec codec,MediaCodec.BufferInfo info)  {
@@ -104,11 +156,36 @@ public class SimpleMediaMuxer {
      * @param info bufferinfo
      */
     public void writeAudioData(byte[] data, MediaCodec.BufferInfo info){
+        if (audioAppendFlag) {
+            long diff = info.presentationTimeUs - mCachedAudioPresentationTimeUs;
+            info.presentationTimeUs += diff;
+        } else {
+            long pts = info.presentationTimeUs;
+            if (pts < mLastAudioPresentationTimeUs) {
+                audioAppendFlag = true;
+                info.presentationTimeUs += mLastAudioPresentationTimeUs;
+                mCachedAudioPresentationTimeUs = info.presentationTimeUs;
+            }
+        }
         ByteBuffer out = encodeAudio(data,info);
         mediaMuxer.writeSampleData(audioIdx,out,info);
+        mLastAudioPresentationTimeUs = info.presentationTimeUs;
     }
 
     public void writeVideoData(byte[] data, MediaCodec.BufferInfo info){
+
+        if (videoAppendFlag) {
+            long diff = info.presentationTimeUs - mCachedVideopresentationTimeUs;
+            info.presentationTimeUs += diff;
+        } else {
+            long pts = info.presentationTimeUs;
+            if (pts < mLastVideopresentationTimeUs) {
+                videoAppendFlag = true;
+                info.presentationTimeUs += mLastVideopresentationTimeUs;
+                mCachedVideopresentationTimeUs = info.presentationTimeUs;
+            }
+        }
+
         ByteBuffer out = encodeAudio(data,info);
         mediaMuxer.writeSampleData(videoIdx,out,info);
     }
@@ -118,7 +195,19 @@ public class SimpleMediaMuxer {
      * @param info bufferinfo
      */
     public void writeAudioData(ByteBuffer buffer, MediaCodec.BufferInfo info){
+        if (audioAppendFlag) {
+            long diff = info.presentationTimeUs - mCachedAudioPresentationTimeUs;
+            info.presentationTimeUs += diff;
+        } else {
+            long pts = info.presentationTimeUs;
+            if (pts < mLastAudioPresentationTimeUs) {
+                audioAppendFlag = true;
+                info.presentationTimeUs += mLastAudioPresentationTimeUs;
+                mCachedAudioPresentationTimeUs = info.presentationTimeUs;
+            }
+        }
         mediaMuxer.writeSampleData(audioIdx,buffer,info);
+        mLastAudioPresentationTimeUs = info.presentationTimeUs;
     }
     public void writeVideoData(ByteBuffer buffer, MediaCodec.BufferInfo info){
         mediaMuxer.writeSampleData(videoIdx,buffer,info);

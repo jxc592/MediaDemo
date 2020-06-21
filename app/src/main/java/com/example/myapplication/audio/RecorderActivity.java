@@ -6,6 +6,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.Bundle;
 import android.view.View;
@@ -53,12 +54,12 @@ public class RecorderActivity extends AppCompatActivity {
                         track.play();
                         mediaParser.setCodecCallBack(new MediaParser.CodecCallBack() {
                            @Override
-                           public void onAudioDecoderedBufferAvailable(byte[] data) {
+                           public void onAudioDecoderedBufferAvailable(byte[] data, MediaCodec.BufferInfo info) {
                                track.write(data,0,data.length);
                            }
 
                             @Override
-                            public void onVideoDecoderedBufferAvailAble(byte[] data) {
+                            public void onVideoDecoderedBufferAvailAble(byte[] data, MediaCodec.BufferInfo info) {
 
                             }
                         });
