@@ -99,6 +99,10 @@ public class VideoFragment extends PlaceholderFragment {
             mActivityWidth = mListView.getMeasuredWidth()/2 -25 ;
             Log.d("jxc","activiy width " + mActivityWidth);
 
+            if(bitmap == null) {
+                return;
+            }
+
             float imageW = bitmap.getWidth();
 
             float imageH = bitmap.getHeight() * (mActivityWidth/imageW);
