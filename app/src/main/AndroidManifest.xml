@@ -16,7 +16,13 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".video.VideoMuxerActivity"></activity>
+        <service
+            android:name=".video.VideoService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity android:name=".video.VideoConvertActivity" />
+        <activity android:name=".video.VideoMuxerActivity" />
         <activity android:name=".audio.RecorderActivity" />
         <activity android:name=".video.MediaPickerActivity" />
 

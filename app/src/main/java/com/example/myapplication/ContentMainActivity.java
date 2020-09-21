@@ -6,16 +6,19 @@ import android.os.Bundle;
 import com.example.myapplication.audio.RecorderActivity;
 import com.example.myapplication.util.PermissionUtils;
 import com.example.myapplication.video.VideoActivity;
+import com.example.myapplication.video.VideoConvertActivity;
 import com.example.myapplication.video.VideoMuxerActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,6 +50,7 @@ public class ContentMainActivity extends AppCompatActivity implements MenuItem.O
         getMenuInflater().inflate(R.menu.menu_main,menu);
         menu.findItem(R.id.menu_videoedit).setOnMenuItemClickListener(this);
         menu.findItem(R.id.menu_record).setOnMenuItemClickListener(this);
+        menu.findItem(R.id.menu_video_convert).setOnMenuItemClickListener(this);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -89,7 +93,30 @@ public class ContentMainActivity extends AppCompatActivity implements MenuItem.O
             Intent intent = new Intent(this, RecorderActivity.class);
             startActivity(intent);
             return true;
+        } else if( item.getItemId() == R.id.menu_video_convert) {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("video/*");
+            startActivityForResult(intent,1);
+            return true;
         }
         return false;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 1) {
+
+            if(data == null)
+                return;
+            Log.d("JXC","data " + data.getData().toString());
+            Intent intent = new Intent(this, VideoConvertActivity.class);
+
+            intent.putExtras(data);
+
+            intent.setData(data.getData());
+            startActivity(intent);
+        }
     }
 }

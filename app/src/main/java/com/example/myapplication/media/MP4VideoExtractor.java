@@ -120,7 +120,7 @@ public class MP4VideoExtractor {
      * @param packet    一帧数据（包含adts头长度）
      * @param packetLen 一帧数据（包含adts头）的长度
      */
-    private static void addADTStoPacket(byte[] packet, int packetLen) {
+    public static void addADTStoPacket(byte[] packet, int packetLen) {
         int profile = 2; // AAC LC
         int freqIdx = getFreqIdx(44100);
         int chanCfg = 2; // CPE
@@ -136,7 +136,7 @@ public class MP4VideoExtractor {
     }
 
 
-    private static int getFreqIdx(int sampleRate) {
+    public static int getFreqIdx(int sampleRate) {
         int freqIdx;
 
         switch (sampleRate) {

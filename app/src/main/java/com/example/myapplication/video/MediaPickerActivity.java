@@ -167,6 +167,11 @@ public class MediaPickerActivity extends AppCompatActivity implements MenuItem.O
             Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(container.getContext().getContentResolver(),mediaFileDescrtpter.getId(),1,null);
             float a = mListView.getMeasuredWidth()/4 ;
             Log.d("jxc","target width " + a);
+
+            if(bitmap == null) {
+                return;
+            }
+
             Bitmap source = BitmapUtils.getBitmapForPicker(bitmap,a, a);
             mSource = source;
             imageView.setImageBitmap(source);

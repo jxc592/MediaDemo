@@ -9,6 +9,13 @@
         android:visible="true"
         app:showAsAction="collapseActionView|withText" />
     <item
+        android:id="@+id/menu_video_convert"
+        android:enabled="true"
+        android:icon="@drawable/ic_noti_player_play"
+        android:title="video convert"
+        android:visible="true"
+        app:showAsAction="collapseActionView" />
+    <item
         android:id="@+id/menu_videoedit"
         android:enabled="true"
         android:icon="@drawable/ic_noti_player_play"
