@@ -1,8 +1,6 @@
 package com.example.myapplication.audio;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -13,36 +11,24 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.myapplication.BuildConfig;
 import com.example.myapplication.IAudioPlayService;
 import com.example.myapplication.R;
+import com.example.myapplication.base.BaseHandlerActivity;
 import com.example.myapplication.bean.MediaFileDescrtpter;
-import com.example.myapplication.ui.main.BaseHandlerActivity;
-import com.example.myapplication.util.BitmapUtils;
 import com.example.myapplication.util.NativeLib;
 import com.example.myapplication.widget.CircleImageDrawable;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 public class AudioPlayActivity extends BaseHandlerActivity implements View.OnClickListener,AudioAction {
 

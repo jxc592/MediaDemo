@@ -1,7 +1,6 @@
 package com.example.myapplication.video;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.media.MediaCodec;
@@ -13,14 +12,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.base.BaseHandlerActivity;
 import com.example.myapplication.bean.MediaFileDescrtpter;
 import com.example.myapplication.media.MediaParser;
 import com.example.myapplication.media.SimpleMediaMuxer;
-import com.example.myapplication.ui.main.BaseHandlerActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import static android.os.Environment.DIRECTORY_MOVIES;
 

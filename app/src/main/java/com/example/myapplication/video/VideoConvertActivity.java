@@ -21,11 +21,12 @@ import android.widget.TextView;
 
 import com.example.myapplication.IVideoInterface;
 import com.example.myapplication.R;
+import com.example.myapplication.base.BaseHandlerActivity;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class VideoConvertActivity extends AppCompatActivity {
+public class VideoConvertActivity extends BaseHandlerActivity {
 
     TextView tv_codecs_infos,tv_detail,tv_output;
     RecyclerView listView;
@@ -36,6 +37,11 @@ public class VideoConvertActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             iVideoInterface = IVideoInterface.Stub.asInterface(service);
+            try {
+                iVideoInterface.videoPrepare(mData.toString());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override

@@ -14,4 +14,6 @@ interface IVideoInterface {
     void videoPrepare(String uri);
 
     void videoInfoCallBack(String result);
+
+
 }

@@ -2,36 +2,35 @@ package com.example.myapplication.video;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.util.Log;
 
 
 import com.example.myapplication.BuildConfig;
 import com.example.myapplication.IVideoInterface;
+import com.example.myapplication.base.BaseService;
 import com.example.myapplication.media.MP4VideoExtractor;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Calendar;
 
-import androidx.annotation.NonNull;
+public class VideoService extends BaseService {
 
-public class VideoService extends Service {
+
+    private static final byte ERR_FILE_OPEN_FAILED =1;
+    private static final byte ERR_NO_OUTPUT_FILE =2;
+    private static final byte ERR_NO_AUDIO_TRACK =3;
+    private static final byte NO_ERROR = 0;
 
     String mOutputDir;
 
@@ -69,8 +68,14 @@ public class VideoService extends Service {
         }
 
         @Override
-        public void videoPrepare(String uri) throws RemoteException {
-
+        public void videoPrepare(final String uri) throws RemoteException {
+            new Thread(){
+                @Override
+                public void run() {
+                    super.run();
+                    extractAudioFromVideo(VideoService.this,Uri.parse(uri));
+                }
+            }.start();
         }
 
         @Override
@@ -92,8 +97,17 @@ public class VideoService extends Service {
     }
 
 
-    private void extractAudioFromVideo(String oriVideo){
-
+    private void extractAudioFromVideo(Context context,Uri uri){
+        MediaExtractor mediaExtractor = new MediaExtractor();
+        try {
+            ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(uri, "r");
+            mediaExtractor.setDataSource(fileDescriptor.getFileDescriptor());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("JXC","open uri failed.");
+            handleExtractorResult(ERR_FILE_OPEN_FAILED,"打开源文件失败",null);
+            return;
+        }
         String filename = mOutputDir + "/" + System.currentTimeMillis()+".aac";
         Log.d("JXC","extractAudioFromVideo input file= " + filename);
 
@@ -103,14 +117,8 @@ public class VideoService extends Service {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Log.d(TAG,"open file failed");
+            handleExtractorResult(ERR_NO_OUTPUT_FILE,"访问输出文件失败",null);
             return;
-        }
-
-        MediaExtractor mediaExtractor = new MediaExtractor();
-        try {
-            mediaExtractor.setDataSource(filename);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         int audioTrackIdx=-1;
@@ -120,13 +128,14 @@ public class VideoService extends Service {
             String mineType = trackFormat.getString(MediaFormat.KEY_MIME);
             //音频信道
             if (!mineType.startsWith("audio/")) {
-               continue;
+                continue;
             } else {
                 audioTrackIdx = i;
             }
         }
         if(audioTrackIdx == -1) {
             Log.d("JXC","extractAudioFromVideo no audio track.");
+            handleExtractorResult(ERR_NO_OUTPUT_FILE,"访问输出文件失败",null);
             return;
         }
 
@@ -187,6 +196,24 @@ public class VideoService extends Service {
             e.printStackTrace();
             Log.d("JXC","audio stream operation error");
         }
-
+        handleExtractorResult(NO_ERROR,"抽离音频文件成功：" + filename,filename);
     }
+
+
+
+    private void handleExtractorResult(byte errCode,String msg,String data){
+        switch (errCode) {
+            case ERR_FILE_OPEN_FAILED:
+                break;
+            case ERR_NO_OUTPUT_FILE:
+                break;
+            case ERR_NO_AUDIO_TRACK:
+                break;
+            case NO_ERROR:
+                break;
+        }
+    }
+
+
+
 }

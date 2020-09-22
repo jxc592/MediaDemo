@@ -2,29 +2,22 @@ package com.example.myapplication.video;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.media.MediaExtractor;
-import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
-import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.myapplication.R;
+import com.example.myapplication.base.BaseHandlerActivity;
 import com.example.myapplication.bean.MediaFileDescrtpter;
-import com.example.myapplication.media.MediaUtils;
-import com.example.myapplication.ui.main.BaseHandlerActivity;
-
-import org.w3c.dom.ls.LSException;
 
 import java.io.IOException;
 import java.util.ArrayList;

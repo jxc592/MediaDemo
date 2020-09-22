@@ -1,12 +1,21 @@
-package com.example.myapplication.ui.main;
+package com.example.myapplication.base;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.Service;
+import android.content.Intent;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 
-public class BaseHandlerActivity extends AppCompatActivity {
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+public class BaseService extends Service {
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
 
     Handler mHander = new Handler() {
         @Override
@@ -38,5 +47,17 @@ public class BaseHandlerActivity extends AppCompatActivity {
 
     protected void handleMessage(@NonNull Message msg) {
 
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        BaseComponentManager.getInstance().addComponent(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        BaseComponentManager.getInstance().removeComponent(this);
     }
 }
