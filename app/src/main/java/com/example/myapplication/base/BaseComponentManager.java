@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentProvider;
 import android.content.Context;
 import android.os.Message;
+import android.util.Log;
 
 import java.util.HashMap;
 
@@ -16,8 +17,6 @@ public class BaseComponentManager {
 
     private HashMap<String,Activity> mAliveActivities;
     private HashMap<String,Service> mAliveServices;
-    private HashMap<String,ContentProvider> mAliveProviders;
-    private HashMap<String,BroadcastReceiver> mAliveReceivers;
 
     private Application mApplication;
 
@@ -25,9 +24,6 @@ public class BaseComponentManager {
 
         mAliveActivities = new HashMap<>();
         mAliveServices = new HashMap<>();
-        mAliveProviders = new HashMap<>();
-        mAliveReceivers = new HashMap<>();
-
     }
 
     public static BaseComponentManager getInstance() {
@@ -38,7 +34,7 @@ public class BaseComponentManager {
     }
 
     public void addComponent(Context context){
-
+        Log.d("JXC","" + context.getClass()==null? "class null":context.getClass().getName());
         String name = context.getClass().getName();
         if(context instanceof Activity) {
             mAliveActivities.put(name, (Activity) context);
@@ -62,10 +58,16 @@ public class BaseComponentManager {
     }
 
     public void sendMessageTo(Class target, Message message){
+        String name = target.getName();
+        if(mAliveActivities.get(name) !=null) {
+            BaseHandlerActivity baseHandlerActivity = (BaseHandlerActivity) mAliveActivities.get(name);
+            baseHandlerActivity.sendMessage(message);
+        }
+        if(mAliveServices.get(name) !=null) {
+            BaseService baseService = (BaseService) mAliveServices.get(name);
+            baseService.sendMessage(message);
+        }
 
     }
 
-    public void sendMessageTo(Context curContext,Class target, Message message){
-
-    }
 }

@@ -108,22 +108,10 @@ public class VideoService extends BaseService {
             handleExtractorResult(ERR_FILE_OPEN_FAILED,"打开源文件失败",null);
             return;
         }
-        String filename = mOutputDir + "/" + System.currentTimeMillis()+".aac";
-        Log.d("JXC","extractAudioFromVideo input file= " + filename);
-
-        FileOutputStream audioOutputStream;
-        try {
-            audioOutputStream = new FileOutputStream(filename);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.d(TAG,"open file failed");
-            handleExtractorResult(ERR_NO_OUTPUT_FILE,"访问输出文件失败",null);
-            return;
-        }
 
         int audioTrackIdx=-1;
 
-        for (int i =0 ;i>mediaExtractor.getTrackCount();i++) {
+        for (int i =0 ;i<mediaExtractor.getTrackCount();i++) {
             MediaFormat trackFormat = mediaExtractor.getTrackFormat(i);
             String mineType = trackFormat.getString(MediaFormat.KEY_MIME);
             //音频信道
@@ -135,6 +123,19 @@ public class VideoService extends BaseService {
         }
         if(audioTrackIdx == -1) {
             Log.d("JXC","extractAudioFromVideo no audio track.");
+            handleExtractorResult(ERR_NO_OUTPUT_FILE,"访问输出文件失败",null);
+            return;
+        }
+
+        String filename = mOutputDir + "/" + System.currentTimeMillis()+".aac";
+        Log.d("JXC","extractAudioFromVideo input file= " + filename);
+
+        FileOutputStream audioOutputStream;
+        try {
+            audioOutputStream = new FileOutputStream(filename);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.d(TAG,"open file failed");
             handleExtractorResult(ERR_NO_OUTPUT_FILE,"访问输出文件失败",null);
             return;
         }
@@ -155,7 +156,7 @@ public class VideoService extends BaseService {
 
         while (true) {
             int readSampleCount = mediaExtractor.readSampleData(byteBuffer, 0);
-            Log.d(TAG, "audio:readSampleCount:" + readSampleCount);
+
             if (readSampleCount < 0) {
                 break;
             }
@@ -171,6 +172,7 @@ public class VideoService extends BaseService {
                 System.arraycopy(buffer, 0, aacaudiobuffer, 7, readSampleCount);
                 try {
                     audioOutputStream.write(aacaudiobuffer);
+                    Log.d(TAG, "audio:writeaac buffer:" + readSampleCount);
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.d("JXC", "write error");
@@ -179,6 +181,7 @@ public class VideoService extends BaseService {
             } else {
                 try {
                     audioOutputStream.write(buffer);
+                    Log.d(TAG, "audio:write common buffer:" + readSampleCount);
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.d("JXC", "write error");

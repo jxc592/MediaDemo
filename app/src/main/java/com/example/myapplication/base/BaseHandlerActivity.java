@@ -47,12 +47,11 @@ public class BaseHandlerActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         BaseComponentManager.getInstance().addComponent(this);
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //BaseComponentManager.getInstance().re
+        BaseComponentManager.getInstance().removeComponent(this);
     }
 }

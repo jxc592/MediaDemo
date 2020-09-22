@@ -5,7 +5,6 @@
 #include "ffmpeg.h"
 
 void getAlbumArt(const char *path, uint8_t **data, int *size) {
-
     AVFormatContext *avFormatContext = avformat_alloc_context();
     int err = avformat_open_input(&avFormatContext, path, NULL, NULL);
 
@@ -23,5 +22,19 @@ void getAlbumArt(const char *path, uint8_t **data, int *size) {
         }
     }
     avformat_close_input(&avFormatContext);
+}
+
+void extractAudio(const char *input,char *output) {
+    AVFormatContext *avFormatContext = avformat_alloc_context();
+    int err = avformat_open_input(&avFormatContext, input, NULL, NULL);
+
+    if (err < 0) {
+        LOGE("avformat_open_input error %d", err);
+        return;
+    }
+    int streamIdx =av_find_best_stream(avFormatContext,AVMEDIA_TYPE_AUDIO, -1,-1,NULL,-1);
+    if(streamIdx != AVERROR_STREAM_NOT_FOUND && streamIdx != AVERROR_DECODER_NOT_FOUND) {
+        AVStream *avStream = avFormatContext->streams[streamIdx];
+    }
 
 }

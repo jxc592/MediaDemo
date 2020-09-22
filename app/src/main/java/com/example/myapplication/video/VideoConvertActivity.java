@@ -49,8 +49,7 @@ public class VideoConvertActivity extends BaseHandlerActivity {
 
         }
     };
-
-    Intent mIntent = new Intent(this,VideoService.class);
+    Intent mIntent;
 
     Uri mData;
 
@@ -64,6 +63,7 @@ public class VideoConvertActivity extends BaseHandlerActivity {
 
         //dump();
 
+        mIntent = new Intent(this,VideoService.class);
         mData = getIntent().getData();
         if(mData == null) {
             finish();
