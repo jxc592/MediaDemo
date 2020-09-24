@@ -33,8 +33,14 @@ void extractAudio(const char *input,char *output) {
         return;
     }
     int streamIdx =av_find_best_stream(avFormatContext,AVMEDIA_TYPE_AUDIO, -1,-1,NULL,-1);
+
+    AVStream *avStream;
     if(streamIdx != AVERROR_STREAM_NOT_FOUND && streamIdx != AVERROR_DECODER_NOT_FOUND) {
-        AVStream *avStream = avFormatContext->streams[streamIdx];
+        avStream = avFormatContext->streams[streamIdx];
     }
 
+
+
+
+    AVIOContext *avioContext = avio_alloc_context()
 }

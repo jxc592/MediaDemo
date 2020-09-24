@@ -1,6 +1,6 @@
 package com.example.myapplication.media;
 
-public class Mime {
+public class MimeTypes {
 
     String[] Mimes =
             {
