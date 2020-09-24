@@ -42,5 +42,5 @@ void extractAudio(const char *input,char *output) {
 
 
 
-    AVIOContext *avioContext = avio_alloc_context()
+    //AVIOContext *avioContext = avio_alloc_context()
 }

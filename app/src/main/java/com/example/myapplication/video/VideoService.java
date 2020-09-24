@@ -1,9 +1,12 @@
 package com.example.myapplication.video;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
@@ -12,11 +15,16 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.util.Log;
 
 
+import androidx.core.app.NotificationCompat;
+
 import com.example.myapplication.BuildConfig;
 import com.example.myapplication.IVideoInterface;
+import com.example.myapplication.R;
+import com.example.myapplication.audio.AudioPlayActivity;
 import com.example.myapplication.base.BaseService;
 import com.example.myapplication.media.MP4VideoExtractor;
 
@@ -59,6 +67,7 @@ public class VideoService extends BaseService {
         NotificationChannel channel = new NotificationChannel(notiId,"video", NotificationManager.IMPORTANCE_DEFAULT);
         mNotificationManager  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.createNotificationChannel(channel);
+        //mNotificationManager.no
     }
 
 
@@ -184,7 +193,7 @@ public class VideoService extends BaseService {
 
         long current = 0;
 
-        int totalTime = mediaFormat.getInteger(MediaFormat.KEY_DURATION);
+        long totalTime = mediaFormat.getLong(MediaFormat.KEY_DURATION);
 
         while (true) {
 
@@ -197,6 +206,7 @@ public class VideoService extends BaseService {
                 break;
             }
 
+            if(current*100/totalTime )
             updateProgress(current*100/totalTime);
 
             //保存音频信息
@@ -258,9 +268,20 @@ public class VideoService extends BaseService {
     }
 
     private void updateProgress(float progress){
-
+        notify("提取",(int)progress);
     }
 
-
-
+    void notify(String title, int progress){
+        NotificationCompat.Builder builder  = new NotificationCompat.Builder(VideoService.this,notiId);
+        builder.setContentTitle(title);
+        builder.setProgress(100,progress,false);
+        builder.setContentText("正在抽离音乐");
+        builder.setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.drawable.icon)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.icon));
+        Intent intent = new Intent(this, VideoConvertActivity.class);
+        PendingIntent pi  = PendingIntent.getActivity(this,0,intent,0);
+        builder.setContentIntent(pi);
+        mNotificationManager.notify(1000,builder.build());
+    }
 }
